@@ -3,7 +3,6 @@ require "json"
 require "aws-sdk-s3"
 
 require "sinatra"
-require "kaminari/sinatra"
 
 if development?
   require "sinatra/reloader"

@@ -7,5 +7,4 @@ gem "nokogiri"
 
 gem "sinatra"
 gem "sinatra-contrib"
-gem "kaminari-sinatra"
 gem "puma"
