@@ -5,6 +5,7 @@ require "tmpdir"
 
 require "aws-sdk-s3"
 
+S3_REGION = ENV.fetch("S3_REGION")
 S3_BUCKET = ENV.fetch("S3_BUCKET")
 S3_PREFIX = ENV.fetch("S3_PREFIX")
 S3_ENDPOINT = ENV["S3_ENDPOINT"]
@@ -51,7 +52,7 @@ end
 
 class Worker
   def initialize
-    @s3 = Aws::S3::Client.new(endpoint: S3_ENDPOINT, access_key_id: S3_ACCESS_KEY_ID, secret_access_key: S3_SECRET_ACCESS_KEY, force_path_style: S3_FORCE_PATH_STYLE)
+    @s3 = Aws::S3::Client.new(region: S3_REGION, endpoint: S3_ENDPOINT, access_key_id: S3_ACCESS_KEY_ID, secret_access_key: S3_SECRET_ACCESS_KEY, force_path_style: S3_FORCE_PATH_STYLE)
     @transcripter = Transcripter.new
     @s3_queue_prefix = S3_PREFIX + "queue/"
     @s3_done_prefix = S3_PREFIX + "done/"
