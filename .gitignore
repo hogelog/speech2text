@@ -8,3 +8,4 @@
 #/target
 /Cargo.lock
 tmp/
+.env
