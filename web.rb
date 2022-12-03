@@ -4,12 +4,49 @@ require "aws-sdk-s3"
 
 require "sinatra"
 
+if File.exist?(".env")
+  require "denv"
+  Denv.load
+end
+
 if development?
   require "sinatra/reloader"
   set :bind, "0.0.0.0"
 end
 
-WHISPER_REVISION = File.read("/app/WHISPER_REVISION").chomp
+if ENV['GOOGLE_CLIENT_ID'] && ENV['GOOGLE_CLIENT_SECRET']
+  enable :sessions
+  set :session_secret, ENV.fetch('SESSION_SECRET')
+
+  require "omniauth-google-oauth2"
+  use OmniAuth::Builder do
+    provider OmniAuth::Strategies::GoogleOauth2, ENV['GOOGLE_CLIENT_ID'], ENV['GOOGLE_CLIENT_SECRET'], hd:   ENV['GOOGLE_OAUTH_HD']
+  end
+  use Rack::Protection::AuthenticityToken
+
+  before do
+    next if request.path.start_with?("/auth/")
+    next if session[:uid]
+    redirect to("/auth/google_oauth2")
+  end
+
+  get "/auth/google_oauth2" do
+  <<HTML
+<form action="/auth/google_oauth2" method="post">
+  <input type="hidden" name="authenticity_token" value="#{Rack::Protection::AuthenticityToken.token(env['rack.session'])}" />
+  <input type="submit" value="Login">
+</form>
+HTML
+  end
+
+  get "/auth/google_oauth2/callback" do
+    session[:uid] = request.env["omniauth.auth"]["uid"]
+    session[:email] = request.env["omniauth.auth"]["info"]["email"]
+    redirect to("/")
+  end
+end
+
+WHISPER_REVISION = File.read("WHISPER_REVISION").chomp
 
 S3_REGION = ENV.fetch("S3_REGION")
 S3_BUCKET = ENV.fetch("S3_BUCKET")
