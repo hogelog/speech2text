@@ -4,6 +4,10 @@ require "aws-sdk-s3"
 
 require "sinatra"
 
+enable :sessions
+set :session_secret, ENV.fetch('SESSION_SECRET')
+use Rack::Protection::AuthenticityToken
+
 if File.exist?(".env")
   require "denv"
   Denv.load
@@ -15,14 +19,10 @@ if development?
 end
 
 if ENV['GOOGLE_CLIENT_ID'] && ENV['GOOGLE_CLIENT_SECRET']
-  enable :sessions
-  set :session_secret, ENV.fetch('SESSION_SECRET')
-
   require "omniauth-google-oauth2"
   use OmniAuth::Builder do
     provider OmniAuth::Strategies::GoogleOauth2, ENV['GOOGLE_CLIENT_ID'], ENV['GOOGLE_CLIENT_SECRET'], hd:   ENV['GOOGLE_OAUTH_HD']
   end
-  use Rack::Protection::AuthenticityToken
 
   before do
     next if request.path.start_with?("/auth/")
@@ -106,6 +106,7 @@ get "/" do
 
   <h2>New</h2>
   <form action="/" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="authenticity_token" value="#{Rack::Protection::AuthenticityToken.token(env['rack.session'])}" />
     <input type="file" name="file">
     <input type="submit">
   </form>
