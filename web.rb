@@ -114,7 +114,7 @@ get "/" do
   <h2>Queue</h2>
   <ul>
     <% @queue_objects.each do |object| %>
-    <li><a href="view/<%= object.key %>"><%= object.key %></a></li>
+    <li><%= object.key %></li>
     <% end %>
   </ul>
 
